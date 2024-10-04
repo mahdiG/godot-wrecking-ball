@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://fbeljivjwr0y"]
+
+[ext_resource type="Script" path="res://character.gd" id="1_g4hsn"]
+[ext_resource type="Script" path="res://camera.gd" id="2_wsk20"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_4dkeu"]
+height = 1.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7j0rp"]
+
+[node name="Character" type="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+script = ExtResource("1_g4hsn")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.734716, 0)
+far = 8000.0
+script = ExtResource("2_wsk20")
+
+[node name="HookLine" type="MeshInstance3D" parent="Camera3D"]
+transform = Transform3D(0.12, 0, 0, 0, 0.12, 0, 0, 0, 0.12, 0.457762, -0.214452, -0.646232)
+mesh = SubResource("CylinderMesh_4dkeu")
+skeleton = NodePath("../..")
+
+[node name="HookRayCast" type="RayCast3D" parent="Camera3D"]
+target_position = Vector3(0, -1, -1000)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_7j0rp")
