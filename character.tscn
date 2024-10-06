@@ -1,29 +1,52 @@
-[gd_scene load_steps=5 format=3 uid="uid://fbeljivjwr0y"]
+[gd_scene load_steps=6 format=3 uid="uid://fbeljivjwr0y"]
 
 [ext_resource type="Script" path="res://character.gd" id="1_g4hsn"]
-[ext_resource type="Script" path="res://camera.gd" id="2_wsk20"]
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_4dkeu"]
+[sub_resource type="SphereMesh" id="SphereMesh_y447c"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_reblj"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dnare"]
+top_radius = 0.03
+bottom_radius = 0.03
 height = 1.0
+cap_top = false
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7j0rp"]
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_f2bi1"]
+radius = 0.1
+height = 0.5
 
 [node name="Character" type="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 script = ExtResource("1_g4hsn")
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.734716, 0)
-far = 8000.0
-script = ExtResource("2_wsk20")
-
-[node name="HookLine" type="MeshInstance3D" parent="Camera3D"]
-transform = Transform3D(0.12, 0, 0, 0, 0.12, 0, 0, 0, 0.12, 0.457762, -0.214452, -0.646232)
-mesh = SubResource("CylinderMesh_4dkeu")
-skeleton = NodePath("../..")
-
-[node name="HookRayCast" type="RayCast3D" parent="Camera3D"]
-target_position = Vector3(0, -1, -1000)
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_y447c")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("CapsuleShape3D_7j0rp")
+shape = SubResource("SphereShape3D_reblj")
+
+[node name="HookLine" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.998405, 0.0564489, 0, -0.0564489, 0.998405, 0.0924206, 0.00917637, 0.0497785)
+
+[node name="HookMesh" type="MeshInstance3D" parent="HookLine"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, -0.5)
+mesh = SubResource("CylinderMesh_dnare")
+
+[node name="Head" type="Node3D" parent="."]
+
+[node name="CameraSpringArm" type="SpringArm3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 0.998497, 0.0548108, 0, -0.0548108, 0.998497, 0, 0.459931, 1.94713)
+spring_length = 1.43
+margin = 0.175
+
+[node name="HookRayCast" type="RayCast3D" parent="Head/CameraSpringArm"]
+transform = Transform3D(1, 0, 0, 0, 0.998497, -0.0548108, 0, 0.0548108, 0.998497, 0, -0.402896, -1.44473)
+target_position = Vector3(0, 0, -200)
+
+[node name="Camera3D" type="Camera3D" parent="Head/CameraSpringArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.81218, 2.1873)
+
+[node name="Eyes" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.0408119, 0.999167, -4.3675e-08, 0, -4.37114e-08, -1, -0.999167, -0.0408119, 1.78395e-09, 0.0716321, 0.196531, -0.931513)
+mesh = SubResource("CapsuleMesh_f2bi1")
