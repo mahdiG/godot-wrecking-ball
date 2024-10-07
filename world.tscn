@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://covuvhefq0f3r"]
+[gd_scene load_steps=8 format=3 uid="uid://covuvhefq0f3r"]
 
 [ext_resource type="PackedScene" uid="uid://fbeljivjwr0y" path="res://character.tscn" id="1_qajwm"]
+[ext_resource type="Script" path="res://character.gd" id="2_kamer"]
 
 [sub_resource type="Environment" id="Environment_4i2f3"]
 
@@ -20,6 +21,7 @@ points = PackedVector3Array(-2, -50, -2, -2, -50, 2, -2, 50, -2, 2, -50, -2, 2, 
 
 [node name="Character" parent="." instance=ExtResource("1_qajwm")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
+script = ExtResource("2_kamer")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_4i2f3")

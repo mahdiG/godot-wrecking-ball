@@ -1,6 +1,106 @@
 [gd_scene load_steps=6 format=3 uid="uid://fbeljivjwr0y"]
 
-[ext_resource type="Script" path="res://character.gd" id="1_g4hsn"]
+[sub_resource type="GDScript" id="GDScript_8p18u"]
+script/source = "extends CharacterBody3D
+
+# Variables for swinging
+var is_swinging = false
+var swing_direction = Vector3.ZERO
+var swing_point = Vector3.ZERO
+var swing_length = 0.0
+
+# Tweakable parameters for the swing feeling
+@export var max_swing_distance = 50.0
+@export var swing_acceleration = 15.0
+@export var gravity_scale = 0.3
+
+# Hook-related variables
+var hook_speed = 15.0
+var hook_offset = Vector3(0, 2, 0) # From player's origin
+var hook_ray_length = 100.0
+var hook_spring_strength = 6.0
+var hook_damping = 2.0
+var hook_connected = false
+var hook_ray_cast: RayCast3D
+
+func _ready():
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	# Initialize RayCast for grappling hook
+	hook_ray_cast = RayCast3D.new()
+	hook_ray_cast.enabled = false
+	hook_ray_cast.target_position = Vector3(0, 0, hook_ray_length)  # Update to use target_position
+	add_child(hook_ray_cast)
+
+func _physics_process(delta):
+	if Input.is_action_just_pressed(\"swing\"):
+		attempt_swing()
+	elif Input.is_action_just_released(\"swing\"):
+		stop_swing()
+
+	if is_swinging:
+		apply_swing_motion(delta)
+	else:
+		apply_gravity(delta)
+
+	handle_movement(delta)
+
+func attempt_swing():
+	var camera_transform = get_viewport().get_camera_3d().get_global_transform()
+	var ray_origin = global_transform.origin + hook_offset
+	hook_ray_cast.global_transform.origin = ray_origin
+	hook_ray_cast.target_position = camera_transform.basis.z * hook_ray_length  # Update to use target_position
+
+	hook_ray_cast.force_raycast_update()
+	if hook_ray_cast.is_colliding():
+		swing_point = hook_ray_cast.get_collision_point()
+		swing_length = (global_transform.origin - swing_point).length()
+		is_swinging = true
+		hook_connected = true
+		swing_direction = (global_transform.origin - swing_point).normalized()
+
+func stop_swing():
+	is_swinging = false
+	hook_connected = false
+
+func apply_swing_motion(delta):
+	# Calculate the direction towards the swing point
+	var to_swing_point = (global_transform.origin - swing_point).normalized()
+	var player_velocity = velocity
+	
+	# Adjust the player's velocity along the swing direction
+	var perpendicular_velocity = player_velocity.cross(to_swing_point).normalized()
+	var swing_force = perpendicular_velocity * swing_acceleration
+	
+	# Apply the swing force
+	velocity += swing_force * delta
+	
+	# Spring effect to keep the player near the swing point
+	var distance = (global_transform.origin - swing_point).length()
+	var spring_velocity = -to_swing_point * (distance - swing_length) * hook_spring_strength
+	velocity += spring_velocity * delta
+
+	# Apply some damping to reduce swinging over time
+	velocity = velocity.lerp(Vector3.ZERO, hook_damping * delta)
+
+func apply_gravity(delta):
+	# Add some gravity, but reduced to allow for smoother swings
+	velocity.y -= 9.8 * gravity_scale * delta
+
+func handle_movement(delta):
+	# Normal character movement, can adjust to use for ground-based controls
+	if !is_swinging:
+		var input_direction = Vector3.ZERO
+		input_direction.x = Input.get_action_strength(\"ui_right\") - Input.get_action_strength(\"ui_left\")
+		input_direction.z = Input.get_action_strength(\"ui_down\") - Input.get_action_strength(\"ui_up\")
+
+		# Move in the direction of input, scale by speed
+		if input_direction.length() > 0:
+			input_direction = input_direction.normalized()
+			velocity = input_direction * hook_speed
+		
+	# Move the player with velocity
+	move_and_slide()
+"
 
 [sub_resource type="SphereMesh" id="SphereMesh_y447c"]
 
@@ -18,7 +118,7 @@ height = 0.5
 
 [node name="Character" type="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-script = ExtResource("1_g4hsn")
+script = SubResource("GDScript_8p18u")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_y447c")
